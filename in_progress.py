@@ -37,5 +37,22 @@ def upload_file(local_file, bucket_name):
         print(f"An error occurred while uploading the file: {e}")
 
 
-upload_file('test_file.txt', BUCKET_NAME)
+# upload_file('test_file.txt', BUCKET_NAME)
 
+def list_files_matching_regex(pattern):
+    try:
+        response = s3.list_objects_v2(Bucket=BUCKET_NAME, Prefix=PREFIX)
+        if 'Contents' in response:
+            files = [file['Key'] for file in response['Contents']]
+            matching_files = [f for f in files if re.match(pattern, f)]
+            print("Files matching the regex pattern:")
+            for file in matching_files:
+                print(file)
+        else:
+            print("No files found.")
+    except ClientError as e:
+        print(f"Error listing files: {e}")
+
+
+regex_pattern = r'.*\.txt$'
+list_files_matching_regex(regex_pattern)
