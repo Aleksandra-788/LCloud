@@ -3,14 +3,11 @@ import os
 from dotenv import load_dotenv
 import re
 from botocore.exceptions import NoCredentialsError, ClientError
-from typing import List
 load_dotenv()
 
 AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
 AWS_REGION = os.getenv('AWS_REGION')
-BUCKET_NAME = 'developer-task'
-PREFIX = 'a-wing/'
 
 s3 = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY_ID,
                   aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
@@ -56,17 +53,18 @@ def upload_file(local_file: str, bucket_name: str) -> None:
         print(f"An error occurred while uploading the file: {e}")
 
 
-def list_files_matching_regex(bucket_names: List, pattern: str) -> None:
+def list_files_matching_regex(bucket_names: str, pattern: str) -> None:
     """List files in the S3 buckets that match the given pattern.
     Args:
-        bucket_names (list): A list of bucket names to search through.
+        bucket_names (str): Bucket names in string format separated with commas to search through.
         pattern (str): The regex pattern to match file names.
 
     Returns:
         None. Prints the list of files that match the regex pattern, or an appropriate message if no matching files are
         found.
     """
-    for bucket_name in bucket_names:
+    list_of_buckets = bucket_names.split(",")
+    for bucket_name in list_of_buckets:
         try:
             response = s3.list_objects_v2(Bucket=bucket_name)
             if 'Contents' in response:
