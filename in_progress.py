@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv
 import re
 from botocore.exceptions import NoCredentialsError, ClientError
+from typing import List
 load_dotenv()
 
 AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
@@ -16,30 +17,55 @@ s3 = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY_ID,
                   region_name=AWS_REGION)
 
 
-def list_files():
-    response = s3.list_objects_v2(Bucket=BUCKET_NAME, Prefix=PREFIX)
-    if 'Contents' in response:
-        files = [file['Key'] for file in response['Contents']]
-        print("Files in bucket:")
-        for file in files:
-            print(file)
-    else:
-        print("No files found.")
+def list_files(bucket_name: str) -> None:
+    """List all files in the bucket.
+    Args:
+        bucket_name (str): The name of the S3 bucket to list the files from.
 
-
-def upload_file(local_file, bucket_name):
-    object_name = f'a-wing/{os.path.basename(local_file)}'
+    Returns:
+        None. Prints the list of files in the specified bucket, or an appropriate message if no files are found.
+    """
     try:
-        s3 = boto3.client('s3')
+        response = s3.list_objects_v2(Bucket=bucket_name)
+        if 'Contents' in response:
+            files = [file['Key'] for file in response['Contents']]
+            print("Files in bucket:")
+            for file in files:
+                print(file)
+        else:
+            print("No files found.")
+    except ClientError as e:
+        print(f"Error listing files: {e}")
+
+
+def upload_file(local_file: str, bucket_name: str) -> None:
+    """Upload a local file to the S3 bucket at the given location.
+    Args:
+        local_file (str): The local file path to be uploaded.
+        bucket_name (str): The name of the S3 bucket where the file will be uploaded.
+
+    Returns:
+        None. Prints a success message if the file was uploaded successfully, or an error message if something went
+        wrong.
+        """
+    object_name = os.path.basename(local_file)
+    try:
         s3.upload_file(local_file, bucket_name, object_name)
         print(f"The file {local_file} has been successfully uploaded as {object_name}.")
     except Exception as e:
         print(f"An error occurred while uploading the file: {e}")
 
 
-# upload_file('test_file.txt', BUCKET_NAME)
+def list_files_matching_regex(bucket_names: List, pattern: str) -> None:
+    """List files in the S3 buckets that match the given pattern.
+    Args:
+        bucket_names (list): A list of bucket names to search through.
+        pattern (str): The regex pattern to match file names.
 
-def list_files_matching_regex(bucket_names, pattern):
+    Returns:
+        None. Prints the list of files that match the regex pattern, or an appropriate message if no matching files are
+        found.
+    """
     for bucket_name in bucket_names:
         try:
             response = s3.list_objects_v2(Bucket=bucket_name)
@@ -55,14 +81,17 @@ def list_files_matching_regex(bucket_names, pattern):
             print(f"Error listing files: {e}")
 
 
+def delete_files_matching_regex(bucket_name: str, pattern: str) -> None:
+    """Delete all files in the S3 bucket that match the given pattern.
+    Args:
+        bucket_name (str): The name of the S3 bucket to delete files from.
+        pattern (str): The regex pattern to match file names for deletion.
 
-# list_files_matching_regex(regex_pattern)
-
-
-def delete_files_matching_regex(bucket_name, pattern):
-    """Delete all files in the S3 bucket that match the given regex."""
+    Returns:
+        None. Prints the number of files deleted, or an appropriate message if no matching files were found.
+    """
     try:
-        response = s3.list_objects_v2(Bucket=bucket_name, Prefix=PREFIX)
+        response = s3.list_objects_v2(Bucket=bucket_name)
         if 'Contents' in response:
             files = [file['Key'] for file in response['Contents']]
             matching_files = [f for f in files if re.match(pattern, f)]
@@ -76,11 +105,3 @@ def delete_files_matching_regex(bucket_name, pattern):
             print("No files found.")
     except ClientError as e:
         print(f"Error deleting files: {e}")
-
-
-regex_pattern = r'.*\.txt$'
-delete_files_matching_regex(BUCKET_NAME, regex_pattern)
-
-
-
-
