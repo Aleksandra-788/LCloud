@@ -4,7 +4,7 @@ from s3_operations import list_files, upload_file, list_files_matching_regex, de
 
 def main():
     if len(sys.argv) < 3:
-        print("Usage: python cli.py [list|upload|list_regex|delete_regex] <bucket_name> [additional_args]")
+        print("Usage: python cli.py [list|upload|list_regex|delete_regex] <bucket_name> [additional_args] ")
         sys.exit(1)
 
     command = sys.argv[1]
