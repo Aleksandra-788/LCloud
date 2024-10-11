@@ -39,20 +39,22 @@ def upload_file(local_file, bucket_name):
 
 # upload_file('test_file.txt', BUCKET_NAME)
 
-def list_files_matching_regex(pattern):
-    try:
-        response = s3.list_objects_v2(Bucket=BUCKET_NAME, Prefix=PREFIX)
-        if 'Contents' in response:
-            files = [file['Key'] for file in response['Contents']]
-            matching_files = [f for f in files if re.match(pattern, f)]
-            print("Files matching the regex pattern:")
-            for file in matching_files:
-                print(file)
-        else:
-            print("No files found.")
-    except ClientError as e:
-        print(f"Error listing files: {e}")
+def list_files_matching_regex(bucket_names, pattern):
+    for bucket_name in bucket_names:
+        try:
+            response = s3.list_objects_v2(Bucket=bucket_name, Prefix=PREFIX)
+            if 'Contents' in response:
+                files = [file['Key'] for file in response['Contents']]
+                matching_files = [f for f in files if re.match(pattern, f)]
+                print("Files matching the regex pattern:")
+                for file in matching_files:
+                    print(file)
+            else:
+                print("No files found.")
+        except ClientError as e:
+            print(f"Error listing files: {e}")
 
 
-regex_pattern = r'.*\.txt$'
-list_files_matching_regex(regex_pattern)
+# regex_pattern = r'.*\.txt$'
+# list_files_matching_regex(regex_pattern)
+
