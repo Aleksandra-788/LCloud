@@ -27,7 +27,15 @@ def list_files():
         print("No files found.")
 
 
-list_files()
+def upload_file(local_file, bucket_name):
+    object_name = f'a-wing/{os.path.basename(local_file)}'
+    try:
+        s3 = boto3.client('s3')
+        s3.upload_file(local_file, bucket_name, object_name)
+        print(f"The file {local_file} has been successfully uploaded as {object_name}.")
+    except Exception as e:
+        print(f"An error occurred while uploading the file: {e}")
 
 
+upload_file('test_file.txt', BUCKET_NAME)
 
