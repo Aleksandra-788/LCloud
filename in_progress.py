@@ -55,9 +55,31 @@ def list_files_matching_regex(bucket_names, pattern):
             print(f"Error listing files: {e}")
 
 
-# regex_pattern = r'.*\.txt$'
+
 # list_files_matching_regex(regex_pattern)
 
+
+def delete_files_matching_regex(bucket_name, pattern):
+    """Delete all files in the S3 bucket that match the given regex."""
+    try:
+        response = s3.list_objects_v2(Bucket=bucket_name, Prefix=PREFIX)
+        if 'Contents' in response:
+            files = [file['Key'] for file in response['Contents']]
+            matching_files = [f for f in files if re.match(pattern, f)]
+            if matching_files:
+                delete_objects = {'Objects': [{'Key': f} for f in matching_files]}
+                s3.delete_objects(Bucket=bucket_name, Delete=delete_objects)
+                print(f"Deleted {len(matching_files)} files matching the regex.")
+            else:
+                print("No files matching the regex found.")
+        else:
+            print("No files found.")
+    except ClientError as e:
+        print(f"Error deleting files: {e}")
+
+
+regex_pattern = r'.*\.txt$'
+delete_files_matching_regex(BUCKET_NAME, regex_pattern)
 
 
 
