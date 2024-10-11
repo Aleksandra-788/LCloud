@@ -42,7 +42,7 @@ def upload_file(local_file, bucket_name):
 def list_files_matching_regex(bucket_names, pattern):
     for bucket_name in bucket_names:
         try:
-            response = s3.list_objects_v2(Bucket=bucket_name, Prefix=PREFIX)
+            response = s3.list_objects_v2(Bucket=bucket_name)
             if 'Contents' in response:
                 files = [file['Key'] for file in response['Contents']]
                 matching_files = [f for f in files if re.match(pattern, f)]
@@ -57,4 +57,8 @@ def list_files_matching_regex(bucket_names, pattern):
 
 # regex_pattern = r'.*\.txt$'
 # list_files_matching_regex(regex_pattern)
+
+
+
+
 
